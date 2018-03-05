@@ -1,0 +1,114 @@
+clear all; close all;clc;
+
+bImageShiftCheck = 1;
+
+ddBRange = 50;
+ddBOffset = 40;
+pdSurfaceSettings = [50,8, 0.4, 1];  % alines, points, threshold, sink
+MainVolumeOfBS=50:512;
+AxialResolution=1.32 ; % Microns
+
+StrFolder1 = 'M:\1310 phase data\08-19-2015\4\';
+
+nInitVol= 1;
+nVolStep =1;
+nLastVolume = 1;
+MeanSurface=zeros(1,nLastVolume-nInitVol+1);
+% load('FocusCorrBS_aug.mat');
+% FocusCorr_circshift=FocusCorrBs*0;
+
+for n = nInitVol:nVolStep: nLastVolume
+    tic
+    if (n<10)
+        StrPrefix = 'I_Volume_000';
+    else
+        if ((9<n) && (n<100))
+            StrPrefix = 'I_Volume_00';
+        else
+            if ((99<n) && (n<1000))
+                StrPrefix = 'I_Volume_0';
+            end
+                        if (n>1000)
+                StrPrefix = 'I_Volume_';
+            end
+        end
+    end
+
+    nVolNumber = n;
+    StrSuffix = '.mat';
+    StrFilename = sprintf('%s%s%d%s', StrFolder1, StrPrefix, nVolNumber, StrSuffix);
+    disp(['loading file number' , num2str(n)]);
+    load(StrFilename);
+    disp('loaded.');
+
+    pdI3DSample = (abs(pdIVolume)).^2;  
+     
+    nPoints = size(pdI3DSample ,1);
+    nAlines = size(pdI3DSample ,2);
+    nBlines = size(pdI3DSample ,3);
+
+    StoreSurface=zeros(nAlines,nBlines);
+
+    % Find surface for 2D-
+      nBlines=50;
+    for(s=50:1:nBlines)
+        
+    pdI=10* log10(pdI3DSample(MainVolumeOfBS,:,s));   
+    Surf = FindSurface(pdI(:,:),pdSurfaceSettings,20*ones(1,size(pdI,2)));
+    
+    
+        % plot figure    
+    pddB = pdI;
+    pddB = (253.0/ddBRange)*(ddBOffset-pddB)+256.0;
+    pddB(find(pddB < 3.0  )) = 1.0;
+    pddB(pddB > 256.0)       = 256.0;
+
+    figure,imagesc((pdI(:,:)));colormap gray;title(' pdI in dB'); hold on;
+    plot(Surf); title(['Surface in the Bline number before corr: ', num2str(s)]);  hold off;
+    
+    
+     Surf = CorrFindSurfaceForMEA(Surf) ;
+    
+    
+%     Surf(end-24:end)=Surf(end-48:end-24);
+%     Surf(1:24)=Surf(25:48);
+%      Surf=Surf+MainVolumeOfBS(1);
+%     MovementOfFocus=t - (2497^(1/2)*((7606036680735329*t)/36028797018963968 - 509604457609267043/9007199254740992))/10 - 268;
+    
+    StoreSurface(:,s)=Surf;
+    MovementOfFocus=floor((14.7175-0.0549 * StoreSurface*AxialResolution)/AxialResolution);
+      
+    % plot figure    
+    pddB = pdI;
+    pddB = (253.0/ddBRange)*(ddBOffset-pddB)+256.0;
+    pddB(find(pddB < 3.0  )) = 1.0;
+    pddB(pddB > 256.0)       = 256.0;
+
+    figure,imagesc((pdI(:,:)));colormap gray;title(' pdI in dB'); hold on;
+    plot(Surf); title(['Surface in the Bline number after corr: ', num2str(s)]);  hold off;
+
+    end
+   
+    SurfRefForEachVolm=floor(mean(mean(StoreSurface)))
+    
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

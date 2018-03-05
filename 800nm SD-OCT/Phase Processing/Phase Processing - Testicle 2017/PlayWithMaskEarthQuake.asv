@@ -1,0 +1,15 @@
+function[]=PlayWithMaskEarthQuake(MaskEartquake,nAlineNumber)
+%Masum 08262015
+
+     nStartingFrame=30;
+     SelectedMask=MaskEartquake(1+(nAlineNumber*(nStartingFrame-1)):nAlineNumber*nStartingFrame);
+     NumberOfNoMovemntPoints=size(find(SelectedMask==0),2)     
+     figure, plot(SelectedMask);
+     title('MaskEartquake');axis tight;
+
+
+
+
+
+end
+

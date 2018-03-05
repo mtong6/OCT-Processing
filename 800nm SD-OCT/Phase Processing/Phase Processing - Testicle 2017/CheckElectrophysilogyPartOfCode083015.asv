@@ -1,0 +1,44 @@
+%Masum
+
+close all;clear all;clc;
+set(0,'defaultfigurecolor',[1 1 1]);                               % to make the background of graph in white color
+
+%% Parameter
+%Select data
+strDirectory = 'B:\1310_data\08-12-2015 AP Phase\SavedRawData\4\';                    % Input the directory of data
+strDataFileEP= '4AP4';                                         % Variable name for EP data
+
+% Select Volume number
+nInitVol=57;
+nVolStep=1;
+nLastVolume=60;
+
+% EP filter parameters
+dCameraTriggerRate  = 10000;        %Hz
+dCameraRateinKHz    = dCameraTriggerRate/1000;
+SamplingRate        = dCameraTriggerRate;
+NoiseFrequencies    = [60 120 180];
+FilterParamters     = [1 2000 1024 1 1 0]; % [BandHalfWidth, LowPassCutOff, nSegmentSize, bFilterMethod, bHammingOn, bshowFigure]
+bEPfilter=1;
+nEPFilter=100;
+nAlineMEA=1200;
+nFrameNumber=100;
+
+ %% Process EP
+load([strDirectory, strDataFileEP, '.mat']);
+disp('EP Data loaded');
+MaxNumberOfVolume=size(EP,2)/(nAlineMEA*100)
+
+for n = nInitVol:nVolStep: nLastVolume
+ 
+    SaveEP=HandleElectrophysiology_fullEP(EP,nAlineMEA,nFrameNumber,n);
+    if(bEPfilter)
+        SaveEP = imfilter(SaveEP, ones([1,nEPFilter])/nEPFilter, 'replicate');
+    end
+
+    SaveEP1((n-nInitVol)*nFrameNumber*nAlineMEA+1:(n-nInitVol+1)*nFrameNumber*nAlineMEA)=SaveEP;
+
+end
+%% Plot figure
+t=(1:length(SaveEP1))/10000;
+figure, plot(t,SaveEP1);title([' V: ',num2str(n)]);

@@ -1,0 +1,19 @@
+
+function []=plotSeveralPhaseLayersTogetherInSubPlotFormat_TN(PhaseRS,TheoryticalNoise,TimeStamp,TitleOfGraph)  %#ok<FNDEF>
+%Masum 06242015
+
+figure();
+for i = 1:size(PhaseRS,1)
+    PhaseVector= PhaseRS(i,:);
+
+    subplot(size(PhaseRS,1), 1, i), plot(TimeStamp,PhaseVector, 'k', 'LineWidth', 2); ylabel([num2str(i)]);
+    hold on; plot(TimeStamp,PhaseVector, 'k', 'LineWidth', 2);
+    if( i==1)
+        title(TitleOfGraph);
+    end
+
+
+end
+
+
+end

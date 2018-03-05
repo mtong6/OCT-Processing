@@ -1,0 +1,12 @@
+
+pdReferenceLine=1:2:500;
+pdReferenceFFT = fft(pdReferenceLine);
+
+pdCurrentLine=pdReferenceLine;
+pdCurrentFFT = fft(pdCurrentLine);
+pdCross = fftshift(ifft(pdReferenceFFT.*conj(pdReferenceFFT)));
+[dMax, nIndex] = max(pdCross((nMidLength-nFlattenFilter):(nMidLength+nFlattenFilter)));
+nShift = (nIndex+(nMidLength-nFlattenFilter)-1) - nMidLength;
+
+
+
